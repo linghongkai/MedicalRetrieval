@@ -132,6 +132,12 @@
             <version>2.7-b1</version>
         </dependency>
 
+<!--        阿里云oss对象储存-->
+        <dependency>
+            <groupId>com.aliyun.oss</groupId>
+            <artifactId>aliyun-sdk-oss</artifactId>
+            <version>3.15.1</version>
+        </dependency>
 
 
     </dependencies>
