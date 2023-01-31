@@ -1,9 +1,12 @@
 package com.medicalretrieval.controller;
 
 import com.medicalretrieval.pojo.Document;
+import com.medicalretrieval.pojo.PageContent;
+import com.medicalretrieval.pojo.Paragraph;
 import com.medicalretrieval.pojo.ReturnDoc;
 import com.medicalretrieval.service.DocumentService;
 
+import com.medicalretrieval.service.ParagraphService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -26,6 +30,24 @@ public class DocumentController {
     @Autowired
     DocumentService documentService;
 
+    @Autowired
+    ParagraphService paragraphService;
+
+    /**
+     * 把文档的段落单独分出来
+     * @param document 一份文档
+     * @param paragraphs 文档中的段落需要传入到该链表中
+     */
+    private void extract(Document document,List<Paragraph> paragraphs){
+        Long id = document.getId();
+        Set<PageContent> pageContents = document.getPageContents();
+        for (PageContent p :
+                pageContents) {
+            paragraphs.add(new Paragraph((id * 10000) + p.getId(), p.getContent(), p.getImgInfos()));
+        }
+    }
+
+
     /**
      * <pre>批量保存pdf</pre>
      * @param documents 批量的文档
@@ -37,6 +59,12 @@ public class DocumentController {
             return false;
         }
         documentService.saveAll(documents);
+        List<Paragraph> paragraphs = new ArrayList<>();
+        for (Document d :
+                documents) {
+            extract(d, paragraphs);
+        }
+        paragraphService.saveAll(paragraphs);
         return true;
     }
 
@@ -51,6 +79,9 @@ public class DocumentController {
             return false;
         }
         documentService.saveOne(document);
+        List<Paragraph> paragraphs = new ArrayList<>();
+        extract(document,paragraphs);
+        paragraphService.saveAll(paragraphs);
         return true;
     }
 
@@ -72,6 +103,17 @@ public class DocumentController {
      */
     public List<ReturnDoc> findDocumentByAuthors(Set<String> authors){
         return documentService.findDocumentByAuthors(authors);
+    }
+
+    /**
+     * <pre>通过某一段落的内容来查找文档</pre>
+     * @param content 某一段落中的内容
+     * @return 结果集
+     */
+    public List<ReturnDoc> findDocumentByParagraphContent(String content){
+        List<Paragraph> paragraphs = paragraphService.findByContent(content);
+
+        return null;
     }
 
 

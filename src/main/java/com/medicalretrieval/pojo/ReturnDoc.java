@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class ReturnDoc {
-    private Document document;
-    private int page;
+
+    private Document document;//文档
+    private int page;//当前应定位到的页数
+    private String Abstract;//摘要
 }
