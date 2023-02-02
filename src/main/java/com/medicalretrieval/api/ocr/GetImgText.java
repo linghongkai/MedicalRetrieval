@@ -1,4 +1,4 @@
-package com.medicalretrieval.api.OCR;
+package com.medicalretrieval.api.ocr;
 
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.auth.credentials.Credential;
@@ -9,7 +9,6 @@ import com.aliyun.sdk.service.ocr_api20210707.models.RecognizeAdvancedResponse;
 import com.google.gson.Gson;
 import com.medicalretrieval.pojo.ImgInfo;
 import darabonba.core.client.ClientOverrideConfiguration;
-import org.elasticsearch.index.engine.Engine;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 

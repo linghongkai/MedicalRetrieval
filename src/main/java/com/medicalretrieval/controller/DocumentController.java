@@ -7,13 +7,13 @@ import com.medicalretrieval.pojo.ReturnDoc;
 import com.medicalretrieval.service.DocumentService;
 
 import com.medicalretrieval.service.ParagraphService;
+import com.medicalretrieval.utils.Transition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -50,11 +50,12 @@ public class DocumentController {
 
     /**
      * <pre>批量保存pdf</pre>
-     * @param documents 批量的文档
      * @return 提交结果
      */
     @PostMapping("saveBatch")
-    public boolean saveBatch(@RequestBody List<Document> documents){
+    public boolean saveBatch(Integer id,@RequestPart("any") MultipartFile[] files) throws IOException {
+
+        List<Document> documents = Transition.TransitionDocument(files);
         if(CollectionUtils.isEmpty(documents)){
             return false;
         }
@@ -91,6 +92,7 @@ public class DocumentController {
      * @param title 文章标题
      * @return 文档类的链表
      */
+    @GetMapping("findByTitle")
     public List<ReturnDoc> findDocumentByTitle(String title){
         return documentService.findDocumentByTitle(title);
     }
@@ -101,6 +103,7 @@ public class DocumentController {
      * @param authors 作者集
      * @return 文档结果
      */
+    @GetMapping("findByAuthor")
     public List<ReturnDoc> findDocumentByAuthors(Set<String> authors){
         return documentService.findDocumentByAuthors(authors);
     }
@@ -110,6 +113,7 @@ public class DocumentController {
      * @param content 某一段落中的内容
      * @return 结果集
      */
+    @GetMapping("findByContent")
     public List<ReturnDoc> findDocumentByParagraphContent(String content){
         List<Paragraph> paragraphs = paragraphService.findByContent(content);
 

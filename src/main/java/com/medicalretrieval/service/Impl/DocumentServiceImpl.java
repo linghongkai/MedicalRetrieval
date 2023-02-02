@@ -45,7 +45,7 @@ public class DocumentServiceImpl implements DocumentService {
         List<ReturnDoc> returnDocs = new ArrayList<>();
         for (Document d :
             documents) {
-            returnDocs.add(new ReturnDoc(d,1));
+            returnDocs.add(new ReturnDoc(d,1,null));
         }
         return returnDocs;
     }
@@ -62,7 +62,7 @@ public class DocumentServiceImpl implements DocumentService {
         List<ReturnDoc> returnDocs = new ArrayList<>();
         for (Document d :
                 documents) {
-            returnDocs.add(new ReturnDoc(d,1));
+            returnDocs.add(new ReturnDoc(d,1,null));
         }
         return returnDocs;
     }
