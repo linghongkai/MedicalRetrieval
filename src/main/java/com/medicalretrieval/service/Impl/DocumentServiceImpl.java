@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class DocumentServiceImpl implements DocumentService {
@@ -65,6 +63,21 @@ public class DocumentServiceImpl implements DocumentService {
             returnDocs.add(new ReturnDoc(d,1,null));
         }
         return returnDocs;
+    }
+
+    /**
+     * @param id 文档的id
+     * @return 返回ReturnDoc的链表
+     */
+    @Override
+    public Document findById(List<Long> id) {
+        Iterable<Document> documents = documentRepository.findAllById(id);
+        Document document = new Document();
+        for (Document d :
+                documents) {
+            document = d;
+        }
+        return document;
     }
 
 

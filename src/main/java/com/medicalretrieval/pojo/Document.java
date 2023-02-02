@@ -46,4 +46,6 @@ public class Document {
     @Field(type = FieldType.Nested)
     private Set <PageContent> pageContents;//页面内容
 
+    @Field(index = false)
+    private String url;
 }

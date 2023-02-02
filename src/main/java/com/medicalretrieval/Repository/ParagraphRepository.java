@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ParagraphRepository extends ElasticsearchRepository<Paragraph,Long> {
-    List<Paragraph> findByContent(String content);
+    List<Paragraph> findByContentOrImgInfos(String content);
 }

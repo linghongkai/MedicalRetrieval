@@ -29,6 +29,6 @@ public class ParagraphServiceImpl implements ParagraphService {
      */
     @Override
     public List<Paragraph> findByContent(String content) {
-        return paragraphRepository.findByContent(content);
+        return paragraphRepository.findByContentOrImgInfos(content);
     }
 }

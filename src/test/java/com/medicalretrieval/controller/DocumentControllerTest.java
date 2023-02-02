@@ -43,7 +43,7 @@ class DocumentControllerTest {
         pageContents.add(new PageContent(2L,"第二页",null));
         pageContents.add(new PageContent(3L,"第三页",null));
         document.setPageContents(pageContents);
-        System.out.println(documentController.saveOne(document));
+//        System.out.println(documentController.saveOne(document));
     }
 
     @Test

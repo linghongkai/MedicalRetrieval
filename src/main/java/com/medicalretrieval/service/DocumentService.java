@@ -17,4 +17,6 @@ public interface DocumentService {
 
 
     List<ReturnDoc> findDocumentByAuthors(Set<String> authors);
+
+    Document findById(List<Long> id);
 }

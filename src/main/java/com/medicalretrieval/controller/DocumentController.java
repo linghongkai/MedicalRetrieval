@@ -8,13 +8,16 @@ import com.medicalretrieval.service.DocumentService;
 
 import com.medicalretrieval.service.ParagraphService;
 import com.medicalretrieval.utils.Transition;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.print.Doc;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -38,7 +41,7 @@ public class DocumentController {
      * @param document 一份文档
      * @param paragraphs 文档中的段落需要传入到该链表中
      */
-    private void extract(Document document,List<Paragraph> paragraphs){
+    private void extract(@NotNull Document document, List<Paragraph> paragraphs){
         Long id = document.getId();
         Set<PageContent> pageContents = document.getPageContents();
         for (PageContent p :
@@ -53,7 +56,7 @@ public class DocumentController {
      * @return 提交结果
      */
     @PostMapping("saveBatch")
-    public boolean saveBatch(Integer id,@RequestPart("any") MultipartFile[] files) throws IOException {
+    public boolean saveBatch(Integer id, MultipartFile[] files) throws IOException {
 
         List<Document> documents = Transition.TransitionDocument(files);
         if(CollectionUtils.isEmpty(documents)){
@@ -71,11 +74,12 @@ public class DocumentController {
 
     /**
      * <pre>保存一个数据</pre>
-     * @param document 文档类
+     * @param id 文档类
      * @return 提交结果
      */
     @PostMapping("saveOne")
-    public boolean saveOne(@RequestBody Document document){
+    public boolean saveOne(Integer id, MultipartFile file) throws IOException {
+        Document document = Transition.TransitionDocument(file);
         if(document==null){
             return false;
         }
@@ -116,7 +120,12 @@ public class DocumentController {
     @GetMapping("findByContent")
     public List<ReturnDoc> findDocumentByParagraphContent(String content){
         List<Paragraph> paragraphs = paragraphService.findByContent(content);
-
+        List<ReturnDoc> list = new ArrayList<>();
+        for (Paragraph p :
+                paragraphs) {
+            Document document = documentService.findById(Collections.singletonList(p.getId() / 10000));
+            list.add(new ReturnDoc(document, (int) (p.getId()%10000),p.getContent()));
+        }
         return null;
     }
 

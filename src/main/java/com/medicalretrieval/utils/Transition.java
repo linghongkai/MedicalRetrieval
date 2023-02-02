@@ -1,14 +1,15 @@
 package com.medicalretrieval.utils;
 
+import com.medicalretrieval.api.oss.OssDao;
 import com.medicalretrieval.pojo.Document;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 /**
  * <pre>将传来的数据转化为规定的格式</pre>
@@ -16,11 +17,23 @@ import java.util.Set;
  */
 public class Transition {
 
-    public static Document TransitionDocument(MultipartFile file) throws IOException {
-        if(file.isEmpty()) return null;
-        String fileName = file.getOriginalFilename();
-        file.transferTo(new File(""));
-        return null;
+    public static @Nullable Document TransitionDocument(@NotNull MultipartFile multipartFile) throws IOException {
+        if(multipartFile.isEmpty()) return null;
+        Document document = new Document();//创建一个document对象
+
+        String fileName = multipartFile.getOriginalFilename()+System.currentTimeMillis();//文件名+时间戳
+        document.setTitle(multipartFile.getOriginalFilename());//标题依旧是文件名，没有加上时间戳
+
+        multipartFile.transferTo(new File("./doc/"+fileName));//将MultipartFile保存一份file
+        File file = new File("./doc/"+fileName);//打开file
+        PDFUtils.ReadPDF(file,document);//解析file，把内容存到document中去
+
+
+        //设置URL，并上传文件
+        document.setUrl(OssDao.upload(multipartFile,fileName));
+
+        boolean delete = file.delete();//删除file
+        return document;
     }
 
     /**

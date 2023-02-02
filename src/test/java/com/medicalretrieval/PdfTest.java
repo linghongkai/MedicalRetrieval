@@ -12,6 +12,7 @@ import org.python.core.PyFunction;
 import org.python.core.PyObject;
 import org.python.core.PyString;
 import org.python.util.PythonInterpreter;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -29,7 +30,6 @@ public class PdfTest {
         String path = "./影响人工关节置换术后下肢深静脉血栓形成的临床风险因素分析_关振鹏.pdf";
         File file = new File(path);
         PythonInterpreter interpreter = new PythonInterpreter();
-
         interpreter.execfile(".\\src\\test\\java\\com\\medicalretrieval\\C.py");
         PyFunction pyFunction = interpreter.get("extractTitle",PyFunction.class);
         PyObject pyObject = pyFunction.__call__(new PyString(path));
