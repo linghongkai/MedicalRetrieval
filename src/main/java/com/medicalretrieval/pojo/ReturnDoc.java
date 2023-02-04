@@ -16,4 +16,5 @@ public class ReturnDoc {
     private Document document;//文档
     private int page;//当前应定位到的页数
     private String Abstract;//摘要
+    private float score;
 }

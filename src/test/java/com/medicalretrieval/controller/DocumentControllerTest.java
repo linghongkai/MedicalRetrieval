@@ -46,25 +46,6 @@ class DocumentControllerTest {
 //        System.out.println(documentController.saveOne(document));
     }
 
-    @Test
-    void findDocumentByTitle() {
-        List<ReturnDoc> documentByTitle = documentController.findDocumentByTitle("生");
-        for (ReturnDoc r :
-                documentByTitle) {
-            System.out.println(r);
-        }
-    }
 
-    @Test
-    void findDocumentByAuthors() {
-        Set<String> authors = new HashSet<>();
-        authors.add("梁宏凯");
-        authors.add("李卓帅");
-        List<ReturnDoc> docs = documentController.findDocumentByAuthors(authors);
-        for (ReturnDoc d :
-                docs) {
-            System.out.println(d);
-        }
-    }
 
 }

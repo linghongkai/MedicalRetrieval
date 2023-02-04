@@ -7,17 +7,28 @@ import com.medicalretrieval.pojo.ReturnDoc;
 import com.medicalretrieval.service.DocumentService;
 
 import com.medicalretrieval.service.ParagraphService;
+import com.medicalretrieval.utils.Page4Navigator;
 import com.medicalretrieval.utils.Transition;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import wiremock.org.apache.commons.lang3.StringUtils;
 
-import javax.print.Doc;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -35,6 +46,9 @@ public class DocumentController {
 
     @Autowired
     ParagraphService paragraphService;
+
+    @Autowired
+    ElasticsearchRestTemplate elasticsearchRestTemplate;
 
     /**
      * 把文档的段落单独分出来
@@ -97,37 +111,44 @@ public class DocumentController {
      * @return 文档类的链表
      */
     @GetMapping("findByTitle")
-    public List<ReturnDoc> findDocumentByTitle(String title){
-        return documentService.findDocumentByTitle(title);
-    }
-
-
-    /**
-     * <pre>通过作者查找文档</pre>
-     * @param authors 作者集
-     * @return 文档结果
-     */
-    @GetMapping("findByAuthor")
-    public List<ReturnDoc> findDocumentByAuthors(Set<String> authors){
-        return documentService.findDocumentByAuthors(authors);
-    }
-
-    /**
-     * <pre>通过某一段落的内容来查找文档</pre>
-     * @param content 某一段落中的内容
-     * @return 结果集
-     */
-    @GetMapping("findByContent")
-    public List<ReturnDoc> findDocumentByParagraphContent(String content){
-        List<Paragraph> paragraphs = paragraphService.findByContent(content);
-        List<ReturnDoc> list = new ArrayList<>();
-        for (Paragraph p :
-                paragraphs) {
-            Document document = documentService.findById(Collections.singletonList(p.getId() / 10000));
-            list.add(new ReturnDoc(document, (int) (p.getId()%10000),p.getContent()));
+    public Page4Navigator<ReturnDoc> findDocumentByTitle(@RequestParam(value = "title") String title,@RequestParam(value = "authors")List<String>authors,@RequestParam(value = "content")String content,@RequestParam(value = "current",defaultValue = "1")int current){
+        NativeSearchQueryBuilder query = new NativeSearchQueryBuilder();
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        if(StringUtils.isNotBlank(title)){
+            boolQueryBuilder.must(QueryBuilders.matchQuery("title",title));
         }
-        return null;
+        if(authors!=null){
+            boolQueryBuilder.must(QueryBuilders.matchQuery("author",authors));
+        }
+        if(StringUtils.isNotBlank(content)){
+            boolQueryBuilder.must(QueryBuilders.matchQuery("content",content));
+        }
+        query.withQuery(boolQueryBuilder);
+
+        Pageable pageable = PageRequest.of(current-1,10);
+
+
+
+        SearchHits<Document> searchHits = elasticsearchRestTemplate.search(query.build(),Document.class, IndexCoordinates.of("document"));
+        searchHits.getTotalHits();
+        List<ReturnDoc> list = new ArrayList<>();
+
+        for (SearchHit<Document>searchHit:searchHits){
+            ReturnDoc returnDoc = new ReturnDoc();
+            returnDoc.setDocument(searchHit.getContent());
+            returnDoc.setPage(1);
+            returnDoc.setAbstract("");
+            returnDoc.setScore(searchHit.getScore());
+
+            list.add(returnDoc);
+        }
+
+        Page<ReturnDoc> page = new PageImpl<>(list, pageable, searchHits.getTotalHits());
+
+        return new Page4Navigator<>(page, 5);
+
     }
+
 
 
 }

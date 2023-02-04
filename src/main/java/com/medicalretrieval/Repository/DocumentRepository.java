@@ -1,8 +1,9 @@
 package com.medicalretrieval.Repository;
 
 import com.medicalretrieval.pojo.Document;
-import com.medicalretrieval.pojo.ReturnDoc;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,6 +15,10 @@ public interface DocumentRepository extends ElasticsearchRepository<Document,Lon
     List<Document> findByTitle(String title);
 
     List<Document> findByAuthor(Set<String> authors);
+
+    @NotNull Page<Document> findAll(@NotNull Pageable pageable);
+
+
 
 
 
