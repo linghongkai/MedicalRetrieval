@@ -1,26 +1,32 @@
 package com.medicalretrieval.utils;
 
+import com.adobe.pdfservices.operation.ExecutionContext;
+import com.adobe.pdfservices.operation.auth.Credentials;
+import com.adobe.pdfservices.operation.exception.SdkException;
+import com.adobe.pdfservices.operation.exception.ServiceApiException;
+import com.adobe.pdfservices.operation.exception.ServiceUsageException;
+import com.adobe.pdfservices.operation.io.FileRef;
+import com.adobe.pdfservices.operation.pdfops.ExtractPDFOperation;
+import com.adobe.pdfservices.operation.pdfops.options.extractpdf.ExtractElementType;
+import com.adobe.pdfservices.operation.pdfops.options.extractpdf.ExtractPDFOptions;
 import com.medicalretrieval.pojo.Document;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDResources;
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.text.PDFTextStripper;
-import org.jetbrains.annotations.NotNull;
-import org.python.core.PyFunction;
-import org.python.core.PyObject;
-import org.python.core.PyString;
+import org.python.antlr.ast.Str;
+import org.python.core.*;
 import org.python.util.PythonInterpreter;
+import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.UUID;
+import java.io.InputStreamReader;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 public class PDFUtils {
+/*
     public static void ReadPDF(@NotNull File file, @NotNull Document documents){
         PythonInterpreter interpreter = new PythonInterpreter();
 //        interpreter.execfile(".\\src\\test\\java\\com\\medicalretrieval\\C.py");
@@ -65,4 +71,72 @@ public class PDFUtils {
         }
 
     }
+*/
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PDFUtils.class);
+
+    public static void ReadPDFText(Document document){
+        try {
+
+            Credentials credentials = Credentials.serviceAccountCredentialsBuilder()
+                    .fromFile("pdfservices-api-credentials.json")
+                    .build();
+            ExecutionContext executionContext = ExecutionContext.create(credentials);
+            ExtractPDFOperation extractPDFOperation = ExtractPDFOperation.createNew();
+            //提供文件
+            FileRef source = FileRef.createFromLocalFile("./影响人工关节置换术后下肢深静脉血栓形成的临床风险因素分析_关振鹏.pdf");
+            extractPDFOperation.setInputFile(source);
+
+
+            ExtractPDFOptions extractPDFOptions = ExtractPDFOptions.extractPdfOptionsBuilder()
+                    .addElementsToExtract(Arrays.asList(ExtractElementType.TEXT))
+                    .build();
+            extractPDFOperation.setOptions(extractPDFOptions);
+
+
+            FileRef result = extractPDFOperation.execute(executionContext);
+
+            //将要保存的路径
+            String outputFilePath = createOutputFilePath();
+            //保存结果,结果为json格式
+            result.saveAs(outputFilePath);
+
+            //使用py代码,获得作者
+            String[] args1 = new String[] { "python", "E:\\workspace\\MedicalRetrieval\\src\\main\\java\\com\\medicalretrieval\\utils\\extractJson.py", outputFilePath };
+            Process proc = Runtime.getRuntime().exec(args1);
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            String line = null;
+            Set<String> authors = new HashSet<>();
+            while(!Objects.equals(line = in.readLine(), "------")){
+                document.setTitle(line);
+            }
+            while(!Objects.equals(line = in.readLine(), "------")){
+                authors.add(line);
+            }
+            document.setAuthor(authors);
+            while(!Objects.equals(line=in.readLine(),"------")){
+                //摘要
+            }
+            while(!Objects.equals(line=in.readLine(),"------")){
+                //关键词
+            }
+            in.close();
+            proc.waitFor();
+
+
+        } catch (ServiceApiException | IOException | SdkException | ServiceUsageException e) {
+            LOGGER.error("Exception encountered while executing operation", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private static String createOutputFilePath() {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss");
+        LocalDateTime now = LocalDateTime.now();
+        String timeStamp = dateTimeFormatter.format(now);
+        return("./temp/extract" + timeStamp + ".zip");
+    }
+
 }

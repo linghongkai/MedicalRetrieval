@@ -26,7 +26,7 @@ public class Transition {
 
         multipartFile.transferTo(new File("./doc/"+fileName));//将MultipartFile保存一份file
         File file = new File("./doc/"+fileName);//打开file
-        PDFUtils.ReadPDF(file,document);//解析file，把内容存到document中去
+//        PDFUtils.ReadPDF(file,document);//解析file，把内容存到document中去
 
 
         //设置URL，并上传文件

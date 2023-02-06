@@ -8,8 +8,8 @@ def extractTitle(strs):
         ans += s
         if s != strs[-1]:
             ans += '_'
-
+    print(ans)
     return ans
 
-
-extractTitle("./三维标测系统和单环状标测导管指示_省略_线性消融电学隔离肺静脉方法学评价_董建增.pdf")
+print(13)
+extractTitle("./影响人工关节置换术后下肢深静脉血栓形成的临床风险因素分析_关振鹏.pdf")
