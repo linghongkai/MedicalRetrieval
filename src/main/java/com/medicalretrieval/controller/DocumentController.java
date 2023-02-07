@@ -7,6 +7,7 @@ import com.medicalretrieval.pojo.ReturnDoc;
 import com.medicalretrieval.service.DocumentService;
 
 import com.medicalretrieval.service.ParagraphService;
+import com.medicalretrieval.utils.PDFUtils;
 import com.medicalretrieval.utils.Page4Navigator;
 import com.medicalretrieval.utils.Transition;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -51,21 +52,6 @@ public class DocumentController {
     ElasticsearchRestTemplate elasticsearchRestTemplate;
 
     /**
-     * 把文档的段落单独分出来
-     * @param document 一份文档
-     * @param paragraphs 文档中的段落需要传入到该链表中
-     */
-    private void extract(@NotNull Document document, List<Paragraph> paragraphs){
-        Long id = document.getId();
-        Set<PageContent> pageContents = document.getPageContents();
-        for (PageContent p :
-                pageContents) {
-            paragraphs.add(new Paragraph((id * 10000) + p.getId(), p.getContent(), p.getImgInfos()));
-        }
-    }
-
-
-    /**
      * <pre>批量保存pdf</pre>
      * @return 提交结果
      */
@@ -80,7 +66,7 @@ public class DocumentController {
         List<Paragraph> paragraphs = new ArrayList<>();
         for (Document d :
                 documents) {
-            extract(d, paragraphs);
+            PDFUtils.ReadPDFText(d,paragraphs);
         }
         paragraphService.saveAll(paragraphs);
         return true;
@@ -99,7 +85,7 @@ public class DocumentController {
         }
         documentService.saveOne(document);
         List<Paragraph> paragraphs = new ArrayList<>();
-        extract(document,paragraphs);
+        PDFUtils.ReadPDFText(document,paragraphs);
         paragraphService.saveAll(paragraphs);
         return true;
     }

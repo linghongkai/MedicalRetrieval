@@ -9,21 +9,28 @@ import com.adobe.pdfservices.operation.io.FileRef;
 import com.adobe.pdfservices.operation.pdfops.ExtractPDFOperation;
 import com.adobe.pdfservices.operation.pdfops.options.extractpdf.ExtractElementType;
 import com.adobe.pdfservices.operation.pdfops.options.extractpdf.ExtractPDFOptions;
+import com.medicalretrieval.api.oss.OssDao;
 import com.medicalretrieval.pojo.Document;
+import com.medicalretrieval.pojo.PageContent;
+import com.medicalretrieval.pojo.Paragraph;
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.python.antlr.ast.Str;
 import org.python.core.*;
 import org.python.util.PythonInterpreter;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.List;
 
 public class PDFUtils {
 /*
@@ -73,8 +80,8 @@ public class PDFUtils {
     }
 */
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PDFUtils.class);
-
-    public static void ReadPDFText(Document document){
+    private static final String END = "------";
+    public static void ReadPDFText(Document document, List<Paragraph> paragraphs){
         try {
 
             Credentials credentials = Credentials.serviceAccountCredentialsBuilder()
@@ -86,6 +93,9 @@ public class PDFUtils {
             FileRef source = FileRef.createFromLocalFile("./影响人工关节置换术后下肢深静脉血栓形成的临床风险因素分析_关振鹏.pdf");
             extractPDFOperation.setInputFile(source);
 
+            //pdfbox的代码，主要是获取图片。
+            String path = "./影响人工关节置换术后下肢深静脉血栓形成的临床风险因素分析_关振鹏.pdf";
+            File file = new File(path);
 
             ExtractPDFOptions extractPDFOptions = ExtractPDFOptions.extractPdfOptionsBuilder()
                     .addElementsToExtract(Arrays.asList(ExtractElementType.TEXT))
@@ -100,6 +110,7 @@ public class PDFUtils {
             //保存结果,结果为json格式
             result.saveAs(outputFilePath);
 
+
             //使用py代码,获得作者
             String[] args1 = new String[] { "python", "E:\\workspace\\MedicalRetrieval\\src\\main\\java\\com\\medicalretrieval\\utils\\extractJson.py", outputFilePath };
             Process proc = Runtime.getRuntime().exec(args1);
@@ -107,21 +118,71 @@ public class PDFUtils {
             BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             String line = null;
             Set<String> authors = new HashSet<>();
-            while(!Objects.equals(line = in.readLine(), "------")){
+            while(!END.equals(line = in.readLine())){
                 document.setTitle(line);
             }
-            while(!Objects.equals(line = in.readLine(), "------")){
+            while(!END.equals(line = in.readLine())){
                 authors.add(line);
             }
             document.setAuthor(authors);
-            while(!Objects.equals(line=in.readLine(),"------")){
+            while(!END.equals(line = in.readLine())){
                 //摘要
             }
-            while(!Objects.equals(line=in.readLine(),"------")){
+            while(!END.equals(line = in.readLine())){
                 //关键词
             }
-            in.close();
-            proc.waitFor();
+            //页码总数
+            try(PDDocument document1 = PDDocument.load(file)){
+                int n = Integer.parseInt(in.readLine());
+                for(int i=1;i<=n;i++){//遍历pdf的每一页,获取结果
+                    PageContent pageContent = new PageContent();
+                    StringBuilder content = new StringBuilder();
+                    pageContent.setId((long) i);
+                    int cnt = 0;
+                    /*
+                      保存这一页的图片
+                     */
+                    {
+                        PDPage page = document1.getPage(i - 1);
+                        PDResources resources = page.getResources();
+                        Iterable<COSName> cosNames = resources.getXObjectNames();
+                        if (cosNames != null) {
+                            for (COSName cosName : cosNames) {
+                                if (resources.isImageXObject(cosName)) {
+                                    PDImageXObject Ipdmage = (PDImageXObject) resources.getXObject(cosName);
+                                    BufferedImage image = Ipdmage.getImage();
+                                    String name = UUID.randomUUID()+".png";
+                                    String filePath = "./temp/" +name;
+                                    try (FileOutputStream out = new FileOutputStream(filePath)) {
+                                        ImageIO.write(image, "png", out);
+                                        OssDao.upload(filePath,name);
+                                        //上传图片后还应读取图片信息，保存图片路径等。
+                                        //.........
+                                    }
+                                    //删除图片
+                                    new File(filePath).delete();
+                                }
+                            }
+                        }
+                    }
+                    /*
+                      保存文本内容，顺带实现段落类
+                    */
+                    {
+                        while (!END.equals(line = in.readLine())) {//遍历pdf的每一段，
+                            content.append(line);
+                            Paragraph paragraph = new Paragraph();
+                            paragraph.setId(document.getId() * 1000000 + pageContent.getId() * 100 + cnt++);
+                            paragraph.setContent(line);
+                        }
+                        pageContent.setContent(String.valueOf(content));
+                    }
+                }
+
+                in.close();
+                proc.waitFor();
+            }
+
 
 
         } catch (ServiceApiException | IOException | SdkException | ServiceUsageException e) {

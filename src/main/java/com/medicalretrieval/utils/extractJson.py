@@ -23,7 +23,7 @@ def extract(var):
     json_list_authors = jp.match('$.elements[?(@.Path ~ ".*H1.*")].Text', data)[0]
     json_list_keyWords = jp.match('$.elements[?(@.Text ~ ".*关键词.*")].Text', data)[0]
     json_list_abstract = jp.match('$.elements[?(@.Text ~ ".*摘要.*" || @.Text ~ ".*Abstract.*")].Text', data)[0]
-    return json_list_title, json_list_authors, json_list_abstract, json_list_keyWords
+    return json_list_title, json_list_authors, json_list_abstract, json_list_keyWords, data
 
 
 if __name__ == '__main__':
@@ -50,5 +50,17 @@ if __name__ == '__main__':
     for k in keywords:
         print(k)
     print('------')
+    data = json_list[4]
+    # 总页码
 
-    # print('123'[1:])
+    n = int(jp.match('$.extended_metadata.page_count', data)[0])
+    print(n)
+    for i in range(0, n):
+        paragraph_list = jp.match('$.elements[?(@.Page==' + str(i) + ')].Text', data)
+        for paragraph in paragraph_list:
+            paragraph = str(paragraph).replace(' ','')
+            paragraph = paragraph.replace('\u3000','')
+            print(paragraph)
+        print('------')
+
+

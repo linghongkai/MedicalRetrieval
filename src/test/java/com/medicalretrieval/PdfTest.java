@@ -29,11 +29,11 @@ public class PdfTest {
     public void testPdf() throws IOException {
         String path = "./影响人工关节置换术后下肢深静脉血栓形成的临床风险因素分析_关振鹏.pdf";
         File file = new File(path);
-        PythonInterpreter interpreter = new PythonInterpreter();
-        interpreter.execfile(".\\src\\test\\java\\com\\medicalretrieval\\C.py");
-        PyFunction pyFunction = interpreter.get("extractTitle",PyFunction.class);
-        PyObject pyObject = pyFunction.__call__(new PyString(path));
-        System.out.println(pyObject);
+//        PythonInterpreter interpreter = new PythonInterpreter();
+//        interpreter.execfile(".\\src\\test\\java\\com\\medicalretrieval\\C.py");
+//        PyFunction pyFunction = interpreter.get("extractTitle",PyFunction.class);
+//        PyObject pyObject = pyFunction.__call__(new PyString(path));
+//        System.out.println(pyObject);
 //        PDDocument document1 = PDDocument.load(file);
 //        PDDocumentInformation information = document1.getDocumentInformation();
 //        System.out.println("页数"+document1.getNumberOfPages());
@@ -54,32 +54,32 @@ public class PdfTest {
             StringBuilder str = new StringBuilder();
             for (int i = 0; i < pageSize; i++) {
                 // 文本内容
-                PDFTextStripper stripper = new PDFTextStripper();
-                // 设置按顺序输出
-                stripper.setSortByPosition(true);
-                stripper.setStartPage(i + 1);
-                stripper.setEndPage(i + 1);
-                String text = stripper.getText(document);
-//                System.out.println(text.trim());
-//                System.out.println("-=-=-=-=-=-=-=-=-=-=-=-=-");
-//                str.append(text.trim());
-                str.append(text);
+//                PDFTextStripper stripper = new PDFTextStripper();
+//                // 设置按顺序输出
+//                stripper.setSortByPosition(true);
+//                stripper.setStartPage(i + 1);
+//                stripper.setEndPage(i + 1);
+//                String text = stripper.getText(document);
+////                System.out.println(text.trim());
+////                System.out.println("-=-=-=-=-=-=-=-=-=-=-=-=-");
+////                str.append(text.trim());
+//                str.append(text);
                 // 图片内容
-//                PDPage page = document.getPage(i);
-//                PDResources resources = page.getResources();
-//                Iterable<COSName> cosNames = resources.getXObjectNames();
-//                if (cosNames != null) {
-//                    for (COSName cosName : cosNames) {
-//                        if (resources.isImageXObject(cosName)) {
-//                            PDImageXObject Ipdmage = (PDImageXObject) resources.getXObject(cosName);
-//                            BufferedImage image = Ipdmage.getImage();
-//                            try (FileOutputStream out = new FileOutputStream("./Img/" + UUID.randomUUID() + ".png")) {
-//                                ImageIO.write(image, "png", out);
-//                            } catch (IOException e) {
-//                            }
-//                        }
-//                    }
-//                }
+                PDPage page = document.getPage(i);
+                PDResources resources = page.getResources();
+                Iterable<COSName> cosNames = resources.getXObjectNames();
+                if (cosNames != null) {
+                    for (COSName cosName : cosNames) {
+                        if (resources.isImageXObject(cosName)) {
+                            PDImageXObject Ipdmage = (PDImageXObject) resources.getXObject(cosName);
+                            BufferedImage image = Ipdmage.getImage();
+                            try (FileOutputStream out = new FileOutputStream("./Img/" + UUID.randomUUID() + ".png")) {
+                                ImageIO.write(image, "png", out);
+                            } catch (IOException e) {
+                            }
+                        }
+                    }
+                }
             }
             System.out.println(str);
         } catch (IOException e) {
