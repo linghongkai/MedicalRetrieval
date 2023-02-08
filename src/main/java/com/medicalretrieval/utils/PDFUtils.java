@@ -9,8 +9,10 @@ import com.adobe.pdfservices.operation.io.FileRef;
 import com.adobe.pdfservices.operation.pdfops.ExtractPDFOperation;
 import com.adobe.pdfservices.operation.pdfops.options.extractpdf.ExtractElementType;
 import com.adobe.pdfservices.operation.pdfops.options.extractpdf.ExtractPDFOptions;
+import com.medicalretrieval.api.ocr.GetImgText;
 import com.medicalretrieval.api.oss.OssDao;
 import com.medicalretrieval.pojo.Document;
+import com.medicalretrieval.pojo.ImgInfo;
 import com.medicalretrieval.pojo.PageContent;
 import com.medicalretrieval.pojo.Paragraph;
 import org.apache.pdfbox.cos.COSName;
@@ -31,6 +33,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class PDFUtils {
 /*
@@ -136,7 +139,7 @@ public class PDFUtils {
                 int n = Integer.parseInt(in.readLine());
                 for(int i=1;i<=n;i++){//遍历pdf的每一页,获取结果
                     PageContent pageContent = new PageContent();
-                    StringBuilder content = new StringBuilder();
+
                     pageContent.setId((long) i);
                     int cnt = 0;
                     /*
@@ -146,7 +149,9 @@ public class PDFUtils {
                         PDPage page = document1.getPage(i - 1);
                         PDResources resources = page.getResources();
                         Iterable<COSName> cosNames = resources.getXObjectNames();
+
                         if (cosNames != null) {
+                            List<String> Urls = new ArrayList<>();
                             for (COSName cosName : cosNames) {
                                 if (resources.isImageXObject(cosName)) {
                                     PDImageXObject Ipdmage = (PDImageXObject) resources.getXObject(cosName);
@@ -155,20 +160,23 @@ public class PDFUtils {
                                     String filePath = "./temp/" +name;
                                     try (FileOutputStream out = new FileOutputStream(filePath)) {
                                         ImageIO.write(image, "png", out);
-                                        OssDao.upload(filePath,name);
-                                        //上传图片后还应读取图片信息，保存图片路径等。
-                                        //.........
+                                        String url = OssDao.upload(filePath, name);
+                                        Urls.add(url);
                                     }
                                     //删除图片
                                     new File(filePath).delete();
                                 }
                             }
+                            List<ImgInfo> imgInfos = GetImgText.getText(Urls);
+                            pageContent.setImgInfos(imgInfos);
+
                         }
                     }
                     /*
                       保存文本内容，顺带实现段落类
                     */
                     {
+                        StringBuilder content = new StringBuilder();
                         while (!END.equals(line = in.readLine())) {//遍历pdf的每一段，
                             content.append(line);
                             Paragraph paragraph = new Paragraph();
@@ -181,8 +189,9 @@ public class PDFUtils {
 
                 in.close();
                 proc.waitFor();
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
             }
-
 
 
         } catch (ServiceApiException | IOException | SdkException | ServiceUsageException e) {

@@ -33,7 +33,7 @@ final public class GetImgText {
      */
     //调用客户端
     @Contract(pure = true)
-    public static @NotNull List<ImgInfo> getText(String @NotNull ...Imgs) throws ExecutionException, InterruptedException {
+    public static @NotNull List<ImgInfo> getText(List<String>Imgs) throws ExecutionException, InterruptedException {
         StaticCredentialProvider provider = StaticCredentialProvider.create(Credential.builder()
                 .accessKeyId("LTAI5t8dqBhJNhj1gci9MCMq")
                 .accessKeySecret("Y5S4wCiaIAMhOvLvU2yL0RQ3I4Ecny")
@@ -52,6 +52,7 @@ final public class GetImgText {
         for (String img:
              Imgs) {
             RecognizeAdvancedRequest recognizeAdvancedRequest = RecognizeAdvancedRequest.builder()
+
                     .url(img)
                     .outputCharInfo(false)
                     .outputTable(true)

@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.util.List;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -22,5 +23,5 @@ public class PageContent {
     private String content;//文章内容
 
     @Field(type = FieldType.Object)
-    private Set<ImgInfo> imgInfos;
+    private List<ImgInfo> imgInfos;
 }
