@@ -96,7 +96,7 @@ public class OssDao {
             // metadata.setHeader(OSSHeaders.OSS_STORAGE_CLASS, StorageClass.Standard.toString());
             // metadata.setObjectAcl(CannedAccessControlList.Private);
             // putObjectRequest.setMetadata(metadata);
-
+            //sjsjafjlalfdklaf
             // 上传文件。
             ossClient.putObject(putObjectRequest);
         } catch (OSSException oe) {
