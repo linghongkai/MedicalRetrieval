@@ -1,7 +1,6 @@
 package com.medicalretrieval.controller;
 
 import com.medicalretrieval.pojo.Document;
-import com.medicalretrieval.pojo.PageContent;
 import com.medicalretrieval.pojo.Paragraph;
 import com.medicalretrieval.pojo.ReturnDoc;
 import com.medicalretrieval.service.DocumentService;
@@ -12,7 +11,6 @@ import com.medicalretrieval.utils.Page4Navigator;
 import com.medicalretrieval.utils.Transition;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -28,10 +26,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import wiremock.org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * <pre>
@@ -56,37 +54,46 @@ public class DocumentController {
      * @return 提交结果
      */
     @PostMapping("saveBatch")
-    public boolean saveBatch(Integer id, MultipartFile[] files) throws IOException {
-
-        List<Document> documents = Transition.TransitionDocument(files);
+    public boolean saveBatch(@RequestBody MultipartFile[] multipartFiles) throws IOException {
+        List<Document> documents = new ArrayList<>();
+        List<File> files = Transition.TransitionDocument(multipartFiles,documents);
         if(CollectionUtils.isEmpty(documents)){
             return false;
         }
-        documentService.saveAll(documents);
+
         List<Paragraph> paragraphs = new ArrayList<>();
         for (Document d :
                 documents) {
-            PDFUtils.ReadPDFText(d,paragraphs);
+            assert false;
+            PDFUtils.ReadPDFText(files.get(0),d,paragraphs);
+            files.remove(0);
         }
+        documentService.saveAll(documents);
         paragraphService.saveAll(paragraphs);
         return true;
     }
 
     /**
      * <pre>保存一个数据</pre>
-     * @param id 文档类
+     * @param file 文档类
      * @return 提交结果
      */
     @PostMapping("saveOne")
-    public boolean saveOne(Integer id, MultipartFile file) throws IOException {
-        Document document = Transition.TransitionDocument(file);
+    public boolean saveOne(@RequestBody MultipartFile file) throws IOException {
+
+        Document document =new Document();
+        File file1 = Transition.TransitionDocument(file,document);
         if(document==null){
             return false;
         }
-        documentService.saveOne(document);
+        document.setId(123L);
+
         List<Paragraph> paragraphs = new ArrayList<>();
-        PDFUtils.ReadPDFText(document,paragraphs);
+        PDFUtils.ReadPDFText(file1,document,paragraphs);
         paragraphService.saveAll(paragraphs);
+        System.out.println("传输成功！！！！！");
+        System.out.println(document);
+        documentService.saveOne(document);
         return true;
     }
 
@@ -133,6 +140,11 @@ public class DocumentController {
 
         return new Page4Navigator<>(page, 5);
 
+    }
+
+    @GetMapping("test")
+    public String test(){
+        return "123456";
     }
 
 

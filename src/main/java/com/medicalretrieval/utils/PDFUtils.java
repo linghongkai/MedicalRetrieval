@@ -29,6 +29,9 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -84,7 +87,7 @@ public class PDFUtils {
 */
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PDFUtils.class);
     private static final String END = "------";
-    public static void ReadPDFText(Document document, List<Paragraph> paragraphs){
+    public static void ReadPDFText(File file,Document document, List<Paragraph> paragraphs){
         try {
 
             Credentials credentials = Credentials.serviceAccountCredentialsBuilder()
@@ -93,15 +96,13 @@ public class PDFUtils {
             ExecutionContext executionContext = ExecutionContext.create(credentials);
             ExtractPDFOperation extractPDFOperation = ExtractPDFOperation.createNew();
             //提供文件
-            FileRef source = FileRef.createFromLocalFile("./影响人工关节置换术后下肢深静脉血栓形成的临床风险因素分析_关振鹏.pdf");
+            InputStream inputStream = Files.newInputStream(file.toPath());
+            FileRef source = FileRef.createFromStream(inputStream,"application/pdf");
             extractPDFOperation.setInputFile(source);
 
-            //pdfbox的代码，主要是获取图片。
-            String path = "./影响人工关节置换术后下肢深静脉血栓形成的临床风险因素分析_关振鹏.pdf";
-            File file = new File(path);
 
             ExtractPDFOptions extractPDFOptions = ExtractPDFOptions.extractPdfOptionsBuilder()
-                    .addElementsToExtract(Arrays.asList(ExtractElementType.TEXT))
+                    .addElementsToExtract(Collections.singletonList(ExtractElementType.TEXT))
                     .build();
             extractPDFOperation.setOptions(extractPDFOptions);
 
@@ -109,9 +110,11 @@ public class PDFUtils {
             FileRef result = extractPDFOperation.execute(executionContext);
 
             //将要保存的路径
-            String outputFilePath = createOutputFilePath();
+            String outputFilePath = "./temp/123.zip";
+            OutputStream outputStream = Files.newOutputStream(Paths.get(outputFilePath));
             //保存结果,结果为json格式
-            result.saveAs(outputFilePath);
+            result.saveAs(outputStream);
+
 
 
             //使用py代码,获得作者
@@ -121,22 +124,29 @@ public class PDFUtils {
             BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             String line = null;
             Set<String> authors = new HashSet<>();
-            while(!END.equals(line = in.readLine())){
+            while(!END.equals(line = in.readLine())&&line!=null){
+                //System.out.println(line);
                 document.setTitle(line);
             }
             while(!END.equals(line = in.readLine())){
+                //System.out.println(line);
                 authors.add(line);
             }
             document.setAuthor(authors);
             while(!END.equals(line = in.readLine())){
+                //System.out.println(line);
                 //摘要
             }
             while(!END.equals(line = in.readLine())){
+                //System.out.println(line);
                 //关键词
             }
+            Set<PageContent> pageContents = new HashSet<>();
             //页码总数
             try(PDDocument document1 = PDDocument.load(file)){
                 int n = Integer.parseInt(in.readLine());
+                document.setPageSize(n);
+                document.setDate(new Date());
                 for(int i=1;i<=n;i++){//遍历pdf的每一页,获取结果
                     PageContent pageContent = new PageContent();
 
@@ -182,10 +192,13 @@ public class PDFUtils {
                             Paragraph paragraph = new Paragraph();
                             paragraph.setId(document.getId() * 1000000 + pageContent.getId() * 100 + cnt++);
                             paragraph.setContent(line);
+                            paragraphs.add(paragraph);
                         }
                         pageContent.setContent(String.valueOf(content));
                     }
+                    pageContents.add(pageContent);
                 }
+                document.setPageContents(pageContents);
 
                 in.close();
                 proc.waitFor();
@@ -202,11 +215,5 @@ public class PDFUtils {
 
     }
 
-    private static String createOutputFilePath() {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss");
-        LocalDateTime now = LocalDateTime.now();
-        String timeStamp = dateTimeFormatter.format(now);
-        return("./temp/extract" + timeStamp + ".zip");
-    }
 
 }

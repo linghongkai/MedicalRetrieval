@@ -4,8 +4,8 @@ import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.OSSException;
-import com.aliyun.oss.model.GetObjectRequest;
-import com.aliyun.oss.model.PutObjectRequest;
+import com.aliyun.oss.internal.OSSHeaders;
+import com.aliyun.oss.model.*;
 import com.medicalretrieval.utils.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,10 +45,11 @@ public class OssDao {
             // 创建PutObjectRequest对象。
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, name, FileUtils.multipartFileToFIle(file));
             // 如果需要上传时设置存储类型和访问权限，请参考以下示例代码。
-            // ObjectMetadata metadata = new ObjectMetadata();
+             ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentDisposition("inline");
             // metadata.setHeader(OSSHeaders.OSS_STORAGE_CLASS, StorageClass.Standard.toString());
             // metadata.setObjectAcl(CannedAccessControlList.Private);
-            // putObjectRequest.setMetadata(metadata);
+             putObjectRequest.setMetadata(metadata);
 
             // 上传文件。
             ossClient.putObject(putObjectRequest);
@@ -92,11 +93,11 @@ public class OssDao {
             // 创建PutObjectRequest对象。
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, name, new File(filePath));
             // 如果需要上传时设置存储类型和访问权限，请参考以下示例代码。
-            // ObjectMetadata metadata = new ObjectMetadata();
-            // metadata.setHeader(OSSHeaders.OSS_STORAGE_CLASS, StorageClass.Standard.toString());
-            // metadata.setObjectAcl(CannedAccessControlList.Private);
-            // putObjectRequest.setMetadata(metadata);
-            //sjsjafjlalfdklaf
+             ObjectMetadata metadata = new ObjectMetadata();
+             metadata.setContentDisposition("inline");
+//             metadata.setHeader(OSSHeaders.OSS_STORAGE_CLASS, StorageClass.Standard.toString());
+//             metadata.setObjectAcl(CannedAccessControlList.Private);
+             putObjectRequest.setMetadata(metadata);
             // 上传文件。
             ossClient.putObject(putObjectRequest);
         } catch (OSSException oe) {
