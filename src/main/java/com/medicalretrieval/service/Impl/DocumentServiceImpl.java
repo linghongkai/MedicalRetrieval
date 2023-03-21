@@ -1,10 +1,9 @@
 package com.medicalretrieval.service.Impl;
 
 import com.medicalretrieval.Repository.DocumentRepository;
-import com.medicalretrieval.pojo.Document;
-import com.medicalretrieval.pojo.ReturnDoc;
+import com.medicalretrieval.pojo.elasticsearch.Document;
+import com.medicalretrieval.pojo.elasticsearch.ReturnDoc;
 import com.medicalretrieval.service.DocumentService;
-import org.elasticsearch.common.inject.Inject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.stereotype.Service;

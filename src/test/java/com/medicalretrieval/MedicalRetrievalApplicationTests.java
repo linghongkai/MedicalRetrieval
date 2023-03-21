@@ -1,18 +1,22 @@
 package com.medicalretrieval;
 
-import com.medicalretrieval.pojo.Document;
+import com.medicalretrieval.pojo.user.User;
+import com.medicalretrieval.service.UserService;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.jws.soap.SOAPBinding;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
-
+import java.util.ArrayList;
+import java.util.List;
 
 
 @SpringBootTest
 class MedicalRetrievalApplicationTests {
+    @Autowired
+    UserService userService;
     @Test
     void contextLoads() {
 
@@ -31,6 +35,26 @@ class MedicalRetrievalApplicationTests {
 //        }//document 销毁，生命结束
 
 
+    }
+
+    @Test
+    void addUser(){
+        List<User> users = new ArrayList<>();
+        for (int i=1;i<30;i++){
+            User user = new User();
+            user.setAccount(String.valueOf(i));
+            user.setPassword(String.valueOf(i));
+            user.setEmail("email"+i);
+            user.setDisabled(0);
+            user.setTelephone("telephone"+i);
+            user.setPermissionGroupId(0);
+
+            users.add(user);
+        }
+        userService.saveAll(users);
+        /*User user = new User();
+        user.setPassword("4444");
+        userService.save(user);*/
     }
 
 }

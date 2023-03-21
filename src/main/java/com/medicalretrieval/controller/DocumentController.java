@@ -1,8 +1,8 @@
 package com.medicalretrieval.controller;
 
-import com.medicalretrieval.pojo.Document;
-import com.medicalretrieval.pojo.Paragraph;
-import com.medicalretrieval.pojo.ReturnDoc;
+import com.medicalretrieval.pojo.elasticsearch.Document;
+import com.medicalretrieval.pojo.elasticsearch.Paragraph;
+import com.medicalretrieval.pojo.elasticsearch.ReturnDoc;
 import com.medicalretrieval.service.DocumentService;
 
 import com.medicalretrieval.service.ParagraphService;
@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * <pre>
@@ -48,6 +49,7 @@ public class DocumentController {
 
     @Autowired
     ElasticsearchRestTemplate elasticsearchRestTemplate;
+    private AtomicLong id=new AtomicLong(1);
 
     /**
      * <pre>批量保存pdf</pre>
@@ -62,10 +64,11 @@ public class DocumentController {
         }
 
         List<Paragraph> paragraphs = new ArrayList<>();
+        int cnt = 0;
         for (Document d :
                 documents) {
-            assert false;
-            PDFUtils.ReadPDFText(files.get(0),d,paragraphs);
+            d.setId(id.getAndAdd(1));
+            PDFUtils.ReadPDFText(files.get(cnt++),d,paragraphs);
             files.remove(0);
         }
         documentService.saveAll(documents);
@@ -86,7 +89,8 @@ public class DocumentController {
         if(document==null){
             return false;
         }
-        document.setId(123L);
+
+        document.setId(id.getAndAdd(1));
 
         List<Paragraph> paragraphs = new ArrayList<>();
         PDFUtils.ReadPDFText(file1,document,paragraphs);
@@ -104,16 +108,16 @@ public class DocumentController {
      * @return 文档类的链表
      */
     @GetMapping("findByTitle")
-    public Page4Navigator<ReturnDoc> findDocumentByTitle(@RequestParam(value = "title") String title,@RequestParam(value = "authors")List<String>authors,@RequestParam(value = "content")String content,@RequestParam(value = "current",defaultValue = "1")int current){
+    public Page4Navigator<ReturnDoc> findDocumentByTitle(@RequestParam(value = "title",defaultValue = "") String title,@RequestParam(value = "authors",defaultValue = "")List<String>authors,@RequestParam(value = "content",defaultValue = "")String content,@RequestParam(value = "current",defaultValue = "1")int current){
         NativeSearchQueryBuilder query = new NativeSearchQueryBuilder();
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         if(StringUtils.isNotBlank(title)){
             boolQueryBuilder.must(QueryBuilders.matchQuery("title",title));
         }
-        if(authors!=null){
+        if(authors!=null&&authors.size()!=0){
             boolQueryBuilder.must(QueryBuilders.matchQuery("author",authors));
         }
-        if(StringUtils.isNotBlank(content)){
+        if(StringUtils.isNotBlank(content)&& !content.equals("")){
             boolQueryBuilder.must(QueryBuilders.matchQuery("content",content));
         }
         query.withQuery(boolQueryBuilder);
@@ -131,7 +135,7 @@ public class DocumentController {
             returnDoc.setDocument(searchHit.getContent());
             returnDoc.setPage(1);
             returnDoc.setAbstract("");
-            returnDoc.setScore(searchHit.getScore());
+            returnDoc.setScore(searchHit.getScore()*100);
 
             list.add(returnDoc);
         }
@@ -142,10 +146,10 @@ public class DocumentController {
 
     }
 
-    @GetMapping("test")
-    public String test(){
-        return "123456";
-    }
+
+
+
+
 
 
 

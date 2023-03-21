@@ -1,9 +1,8 @@
 package com.medicalretrieval.controller;
 
 import com.medicalretrieval.MedicalRetrievalApplication;
-import com.medicalretrieval.pojo.Document;
-import com.medicalretrieval.pojo.PageContent;
-import com.medicalretrieval.pojo.ReturnDoc;
+import com.medicalretrieval.pojo.elasticsearch.Document;
+import com.medicalretrieval.pojo.elasticsearch.PageContent;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +11,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = MedicalRetrievalApplication.class)
 class DocumentControllerTest {

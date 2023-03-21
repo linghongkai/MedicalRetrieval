@@ -4,12 +4,19 @@ spring:
     elasticsearch:
       repositories:
         enabled: true
-
+  datasource:
+    username: root
+    password: itcast
+    url: jdbc:mysql://localhost:3306/medicalretrieval?serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
   elasticsearch:
     rest:
       uris: localhost:1001,localhost:1002,localhost:1003
       username: my-application
-
 #      server.port=7777
 #      server.servlet.path =/es
 #      # elasticsearch集群名称，默认的是elasticsearch
@@ -19,3 +26,9 @@ spring:
 #
 #      #是否开启本地存储
 #      spring.data.elasticsearch.repositories.enable=true
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true

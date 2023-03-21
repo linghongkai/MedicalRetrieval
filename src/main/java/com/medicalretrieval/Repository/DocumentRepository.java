@@ -1,6 +1,6 @@
 package com.medicalretrieval.Repository;
 
-import com.medicalretrieval.pojo.Document;
+import com.medicalretrieval.pojo.elasticsearch.Document;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -1,15 +1,17 @@
-package com.medicalretrieval.pojo;
+package com.medicalretrieval.pojo.elasticsearch;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Generated;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
 
 
@@ -27,6 +29,7 @@ public class Document {
      * id 唯一标识
      */
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
 

@@ -1,7 +1,7 @@
 package com.medicalretrieval.service.Impl;
 
 import com.medicalretrieval.Repository.ParagraphRepository;
-import com.medicalretrieval.pojo.Paragraph;
+import com.medicalretrieval.pojo.elasticsearch.Paragraph;
 import com.medicalretrieval.service.ParagraphService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

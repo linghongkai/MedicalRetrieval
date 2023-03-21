@@ -7,7 +7,7 @@ import com.aliyun.sdk.service.ocr_api20210707.AsyncClient;
 import com.aliyun.sdk.service.ocr_api20210707.models.RecognizeAdvancedRequest;
 import com.aliyun.sdk.service.ocr_api20210707.models.RecognizeAdvancedResponse;
 import com.google.gson.Gson;
-import com.medicalretrieval.pojo.ImgInfo;
+import com.medicalretrieval.pojo.elasticsearch.ImgInfo;
 import darabonba.core.client.ClientOverrideConfiguration;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

@@ -1,6 +1,6 @@
 package com.medicalretrieval.service;
 
-import com.medicalretrieval.pojo.Paragraph;
+import com.medicalretrieval.pojo.elasticsearch.Paragraph;
 
 import java.util.List;
 

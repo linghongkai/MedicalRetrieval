@@ -1,7 +1,7 @@
 package com.medicalretrieval.utils;
 
 import com.medicalretrieval.api.oss.OssDao;
-import com.medicalretrieval.pojo.Document;
+import com.medicalretrieval.pojo.elasticsearch.Document;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.web.multipart.MultipartFile;

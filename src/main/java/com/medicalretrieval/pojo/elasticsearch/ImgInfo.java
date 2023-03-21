@@ -1,4 +1,4 @@
-package com.medicalretrieval.pojo;
+package com.medicalretrieval.pojo.elasticsearch;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

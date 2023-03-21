@@ -1,8 +1,7 @@
 package com.medicalretrieval.service;
 
-import com.medicalretrieval.pojo.Document;
-import com.medicalretrieval.pojo.ReturnDoc;
-import org.springframework.stereotype.Service;
+import com.medicalretrieval.pojo.elasticsearch.Document;
+import com.medicalretrieval.pojo.elasticsearch.ReturnDoc;
 
 import java.util.List;
 import java.util.Set;
