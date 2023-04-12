@@ -23,12 +23,7 @@ public class Transition {
         if(multipartFile.isEmpty()) return null;
 
         String fileName = Objects.requireNonNull(multipartFile.getOriginalFilename()).split("\\.")[0]+System.currentTimeMillis()+".pdf";//文件名+时间戳
-        document.setTitle(multipartFile.getOriginalFilename());//标题依旧是文件名，没有加上时间戳
-
-//        multipartFile.transferTo(new File("doc/"+fileName));//将MultipartFile保存一份file
-//        File file = new File("doc/"+fileName);//打开file
-//        PDFUtils.ReadPDF(file,document);//解析file，把内容存到document中去
-
+        document.setTitle(multipartFile.getOriginalFilename().split("\\.pdf")[0]);//标题依旧是文件名，没有加上时间戳
         File file = new File(Objects.requireNonNull(multipartFile.getOriginalFilename()));
         try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(multipartFile.getBytes());
@@ -37,9 +32,8 @@ public class Transition {
         }
 
         //设置URL，并上传文件
-        document.setUrl(OssDao.upload(multipartFile,fileName));
-
-//        boolean delete = file.delete();//删除file
+        OssDao.upload(multipartFile,fileName);
+        document.setUrl(fileName);
 
         return file;
     }

@@ -34,7 +34,7 @@ public class Document {
 
 
     @Field(type = FieldType.Text,analyzer = "ik_max_word",searchAnalyzer = "ik_smart")
-    private String title;//整个文档的标题
+    private String title;//整个文档的标题   FOCUS超声刀开放性甲状腺切除术的临床疗效评价_薛家鹏
 
     @Field(type = FieldType.Text,analyzer = "ik_max_word",searchAnalyzer = "ik_smart")
     private Set<String> author;//作者,多个作者用英文逗号拼接
@@ -50,5 +50,6 @@ public class Document {
     private Set <PageContent> pageContents;//页面内容
 
     @Field(index = false)
-    private String url;
+    private String url;//FOCUS超声刀开放性甲状腺切除术的临床疗效评价_薛家鹏1680414544381.pdf
+
 }

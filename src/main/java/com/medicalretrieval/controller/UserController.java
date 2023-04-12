@@ -25,10 +25,9 @@ public class UserController {
         return user;
     }
 
-    @DeleteMapping("/")
-    Object deleteUser(@RequestBody User user){
-        userService.deleteById(user.getId());
-        System.out.println("删除成功："+user);
+    @DeleteMapping("/{id}")
+    Object deleteUser(@PathVariable String id){
+        userService.deleteById(Long.parseLong(id));
         return Result.success();
     }
 

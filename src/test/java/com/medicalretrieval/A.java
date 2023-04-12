@@ -177,4 +177,8 @@ public class A {
         PyObject pyObject = pyFunction.__call__(new PyString(str));
         System.out.println("the answer is:"+pyObject);
     }
+    @Test
+    public void  tt(){
+        System.out.println(11);
+    }
 }
