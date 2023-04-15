@@ -1,14 +1,16 @@
 package com.medicalretrieval.utils;
 
-public class Result {
-    public static int SUCCESS_CODE = 1;
-    public static int FAIL_CODE = 0;
+import org.python.modules._codecs;
 
+public class Result {
+    public static final int SUCCESS_CODE = 1;
+    public static final int FAIL_CODE = 0;
+    public static final int NoLogin = 2;
     int code;
     String message;
     Object data;
 
-    private Result(int code, String message, Object data) {
+    public Result(int code, String message, Object data) {
         this.code = code;
         this.message = message;
         this.data = data;
@@ -22,6 +24,10 @@ public class Result {
     }
     public static Result fail(String message) {
         return new Result(FAIL_CODE,message,null);
+    }
+
+    public static Result NoLogin(String message,Object data){
+        return new Result(NoLogin,message,data);
     }
 
     public int getCode() {

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -19,13 +20,14 @@ public class BrowseHistoryController {
 
     @PostMapping("/")
     void addBrowse(@RequestBody BrowseHistory browseHistory){
+        browseHistory.setOpenDate(new Date());
         browseHistoryService.save(browseHistory);
     }
 
     @GetMapping("/{userId}")
-    Page4Navigator<BrowseHistory> queryBrowse(@PathVariable String userId, int curr, int size){
+    Page4Navigator<BrowseHistory> queryBrowse(@PathVariable String userId, int current, int pageSize){
         Sort sort = Sort.by(Sort.Direction.DESC,"openDate");
-        Pageable pageable = PageRequest.of(curr-1,size);
+        Pageable pageable = PageRequest.of(current-1,pageSize);
         List<BrowseHistory> byUserId = browseHistoryService.findByUserId(Long.valueOf(userId), sort);
         Page<BrowseHistory> page = new PageImpl<>(byUserId,pageable,byUserId.size());
 

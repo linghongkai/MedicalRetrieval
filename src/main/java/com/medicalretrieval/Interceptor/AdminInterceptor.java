@@ -9,21 +9,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 
-public class MyInterceptor implements HandlerInterceptor {
-
+public class AdminInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         boolean flag = true;
+
         User user = (User) request.getSession().getAttribute("user");
-        if (user==null){
+        if (user == null || user.getPermissionGroupId()==0){
             response.setContentType("application/json;charset=UTF-8");
-            //跳转到登录页面
-            Result result = Result.NoLogin("用户未登录",null);
+            flag = false;
+            Result result = new Result(1,"未登录或没有权限",null);
             PrintWriter writer = response.getWriter();
             writer.write(new ObjectMapper().writeValueAsString(result));
-            flag = false;
             writer.close();
         }
+
         return flag;
     }
 }

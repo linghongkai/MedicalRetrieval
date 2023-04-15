@@ -25,6 +25,7 @@ import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,6 +57,11 @@ public class DocumentController {
     @Autowired
     ElasticsearchRestTemplate elasticsearchRestTemplate;
 
+    @Autowired
+    private PDFUtils pdfUtils;
+
+    @Autowired
+    private Transition transition;
     /**
      * <pre>批量保存pdf</pre>
      * @return 提交结果
@@ -63,7 +69,7 @@ public class DocumentController {
     @PostMapping("saveBatch")
     public boolean saveBatch(@RequestBody MultipartFile[] multipartFiles) throws IOException {
         List<Document> documents = new ArrayList<>();
-        List<File> files = Transition.TransitionDocument(multipartFiles,documents);
+        List<File> files = transition.TransitionDocument(multipartFiles,documents);
         if(CollectionUtils.isEmpty(documents)){
             return false;
         }
@@ -72,9 +78,7 @@ public class DocumentController {
         int cnt = 0;
         for (Document d :
                 documents) {
-
-
-            PDFUtils.ReadPDFText(files.get(cnt++),d,paragraphs);
+            pdfUtils.ReadPDFText(files.get(cnt++),d,paragraphs);
             files.remove(0);
         }
         documentService.saveAll(documents);
@@ -91,10 +95,10 @@ public class DocumentController {
     public boolean saveOne(@RequestBody MultipartFile file) throws IOException {
 
         Document document =new Document();
-        File file1 = Transition.TransitionDocument(file,document);
+        File file1 = transition.TransitionDocument(file,document);
         List<Paragraph> paragraphs = new ArrayList<>();
         System.out.println(document);
-        PDFUtils.ReadPDFText(file1,document,paragraphs);
+        pdfUtils.ReadPDFText(file1,document,paragraphs);
         paragraphService.saveAll(paragraphs);
         System.out.println("传输成功！！！！！");
         System.out.println(document);
@@ -111,7 +115,8 @@ public class DocumentController {
     @GetMapping("findByTitle")
     public Page4Navigator<ReturnDoc> findDocumentByTitle(
                                                          @RequestParam(value = "title",defaultValue = "") String title,
-                                                         @RequestParam(value = "current",defaultValue = "1")int current
+                                                         @RequestParam(value = "current",defaultValue = "1")int current,
+                                                         @RequestParam(value = "pageSize",defaultValue = "10")int pageSize
                                                         )
     {
         NativeSearchQueryBuilder query = new NativeSearchQueryBuilder();
@@ -121,7 +126,7 @@ public class DocumentController {
         }
         query.withQuery(boolQueryBuilder);
 
-        Pageable pageable = PageRequest.of(current-1,10);
+        Pageable pageable = PageRequest.of(current-1,pageSize);
         SearchHits<Document> searchHits = elasticsearchRestTemplate.search(query.build(),Document.class, IndexCoordinates.of("document"));
         searchHits.getTotalHits();
         List<ReturnDoc> list = new ArrayList<>();
@@ -226,7 +231,7 @@ public class DocumentController {
     @GetMapping("find")
     public List<PdfRestInfo> find(@RequestParam(value = "title",defaultValue = "") String title,@RequestParam(value = "authors",defaultValue = "")List<String>authors,@RequestParam(value = "content",defaultValue = "")String content,@RequestParam(value = "current",defaultValue = "1")int current){
         List<PdfRestInfo> pdfRestInfoList = new ArrayList<>();
-        List<ReturnDoc> returnDocList = findDocumentByTitle(title, current).getContent();
+        List<ReturnDoc> returnDocList = findDocumentByTitle(title, current,100).getContent();
         for (ReturnDoc r:returnDocList){
             PdfRestInfo pdfRestInfo = new PdfRestInfo();
 
@@ -284,7 +289,6 @@ public class DocumentController {
             return this.TextSummary;
         }
     }
-
 
 
 

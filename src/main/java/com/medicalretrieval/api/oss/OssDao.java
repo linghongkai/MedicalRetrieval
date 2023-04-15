@@ -6,15 +6,32 @@ import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.OSSException;
 import com.aliyun.oss.model.*;
 import com.medicalretrieval.utils.FileUtils;
+
 import org.jetbrains.annotations.NotNull;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.Objects;
 
+@Component
 public class OssDao {
-    private static final String schema = "https";
-    private static final String bucket = "medical-retrieval";
-    private static final String endpoint = "oss-cn-beijing.aliyuncs.com";
+
+    @Value(value = "${ossPrefix}")
+    private String ossPrefix;
+    @Value(value = "${endpoint}")
+    private String endpoint;
+    @Value(value = "${accessKeyId}")
+    private String accessKeyId;
+    @Value(value = "${accessKeySecret}")
+    private String accessKeySecret;
+    @Value(value = "${bucketName}")
+    private String bucketName;
+
+
 
     /**
      * 将数据上传到OSS中储存
@@ -22,20 +39,7 @@ public class OssDao {
      * @param name 文件名，（加了时间戳）
      * @return 返回访问该文件的url
      */
-    public static void upload(@NotNull MultipartFile file, String name){
-        // Endpoint以华东1（杭州）为例，其它Region请按实际情况填写。
-        String endpoint = "https://oss-cn-beijing.aliyuncs.com";
-        // 阿里云账号AccessKey拥有所有API的访问权限，风险很高。强烈建议您创建并使用RAM用户进行API访问或日常运维，请登录RAM控制台创建RAM用户。
-        String accessKeyId = "LTAI5t8dqBhJNhj1gci9MCMq";
-        String accessKeySecret = "Y5S4wCiaIAMhOvLvU2yL0RQ3I4Ecny";
-        // 填写Bucket名称，例如examplebucket。
-        String bucketName = "medical-retrieval";
-        // 填写Object完整路径，完整路径中不能包含Bucket名称，例如exampledir/exampleobject.txt。
-        // 填写本地文件的完整路径，例如D:\\localpath\\examplefile.txt。
-        // 如果未指定本地路径，则默认从示例程序所属项目对应本地路径中上传文件。
-        //String filePath= "D:\\localpath\\examplefile.txt";
-
-        // 创建OSSClient实例。
+    public void upload(@NotNull MultipartFile file, String name){
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
 
         try {
@@ -69,20 +73,7 @@ public class OssDao {
         }
     }
 
-    public static String upload(String filePath,String name){
-        // Endpoint以华东1（杭州）为例，其它Region请按实际情况填写。
-        String endpoint = "https://oss-cn-beijing.aliyuncs.com";
-        // 阿里云账号AccessKey拥有所有API的访问权限，风险很高。强烈建议您创建并使用RAM用户进行API访问或日常运维，请登录RAM控制台创建RAM用户。
-        String accessKeyId = "LTAI5t8dqBhJNhj1gci9MCMq";
-        String accessKeySecret = "Y5S4wCiaIAMhOvLvU2yL0RQ3I4Ecny";
-        // 填写Bucket名称，例如examplebucket。
-        String bucketName = "medical-retrieval";
-        // 填写Object完整路径，完整路径中不能包含Bucket名称，例如exampledir/exampleobject.txt。
-        // 填写本地文件的完整路径，例如D:\\localpath\\examplefile.txt。
-        // 如果未指定本地路径，则默认从示例程序所属项目对应本地路径中上传文件。
-        //String filePath= "D:\\localpath\\examplefile.txt";
-
-        // 创建OSSClient实例。
+    public String upload(String filePath,String name){
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
 
         try {
@@ -113,30 +104,24 @@ public class OssDao {
                 ossClient.shutdown();
             }
         }
-        return schema+"://"+bucket+"."+OssDao.endpoint +"/"+ name;
+        return ossPrefix+ name;
 
     }
 
 
-    public static void download(String filepath,String name) throws Exception {
-        // Endpoint以华东1（杭州）为例，其它Region请按实际情况填写。
-        String endpoint = "https://oss-cn-beijing.aliyuncs.com";
-        // 阿里云账号AccessKey拥有所有API的访问权限，风险很高。强烈建议您创建并使用RAM用户进行API访问或日常运维，请登录RAM控制台创建RAM用户。
-        String accessKeyId = "LTAI5t8dqBhJNhj1gci9MCMq";
-        String accessKeySecret = "Y5S4wCiaIAMhOvLvU2yL0RQ3I4Ecny";
-        // 填写Bucket名称，例如examplebucket。
-        String bucketName = "medical-retrieval";
-        // 填写不包含Bucket名称在内的Object完整路径，例如testfolder/exampleobject.txt。
+    public File download(String filepath, String name) throws Exception {
+
         String objectName = filepath;
         String pathName = "./src/main/resources/static/PDF/"+name;
 
         // 创建OSSClient实例。
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
-
         try {
             // 下载Object到本地文件，并保存到指定的本地路径中。如果指定的本地文件存在会覆盖，不存在则新建。
             // 如果未指定本地路径，则下载后的文件默认保存到示例程序所属项目对应本地路径中。
-            ossClient.getObject(new GetObjectRequest(bucketName, objectName), new File(pathName));
+            File file = new File(pathName);
+            ossClient.getObject(new GetObjectRequest(bucketName, objectName), file);
+            return file;
         } catch (OSSException oe) {
             System.out.println("Caught an OSSException, which means your request made it to OSS, "
                     + "but was rejected with an error response for some reason.");
@@ -154,6 +139,42 @@ public class OssDao {
                 ossClient.shutdown();
             }
         }
+        return null;
     }
+
+    @Scheduled(cron = "0 0 3 * * ?")
+    public void deletePDF(){
+        File file = new File("./src/main/resources/static/PDF");
+        File[] fs = file.listFiles();
+        assert fs != null;
+        for(File f:fs){
+            String suf = getFileExtension(f);
+            if(Objects.equals(suf, ".pdf")){
+                System.out.println(f.getName()+"将被删除");
+                f.delete();
+            }
+        }
+    }
+
+    /**
+     * 获取文件后缀的方法
+     *
+     * @param file 要获取文件后缀的文件
+     * @return 文件后缀
+     * @author https://www.4spaces.org/
+     */
+    public String getFileExtension(File file) {
+        String extension = "";
+        try {
+            if (file != null && file.exists()) {
+                String name = file.getName();
+                extension = name.substring(name.lastIndexOf("."));
+            }
+        } catch (Exception e) {
+            extension = "";
+        }
+        return extension;
+    }
+
 
 }

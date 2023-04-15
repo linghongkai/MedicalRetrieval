@@ -4,6 +4,8 @@ import com.medicalretrieval.api.oss.OssDao;
 import com.medicalretrieval.pojo.elasticsearch.Document;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -17,9 +19,13 @@ import java.util.Objects;
  * <pre>将传来的数据转化为规定的格式</pre>
  * @author 梁宏凯
  */
+@Component
 public class Transition {
 
-    public static @Nullable File TransitionDocument(@NotNull MultipartFile multipartFile,Document document) throws IOException {
+    @Autowired
+    private OssDao ossDao;
+
+    public @Nullable File TransitionDocument(@NotNull MultipartFile multipartFile,Document document) throws IOException {
         if(multipartFile.isEmpty()) return null;
 
         String fileName = Objects.requireNonNull(multipartFile.getOriginalFilename()).split("\\.")[0]+System.currentTimeMillis()+".pdf";//文件名+时间戳
@@ -32,7 +38,7 @@ public class Transition {
         }
 
         //设置URL，并上传文件
-        OssDao.upload(multipartFile,fileName);
+        ossDao.upload(multipartFile,fileName);
         document.setUrl(fileName);
 
         return file;
@@ -43,7 +49,7 @@ public class Transition {
      *
      * @return 返回Document链表
      */
-    public static List<File> TransitionDocument(MultipartFile[] multipartFiles,List<Document> documents) throws IOException {
+    public List<File> TransitionDocument(MultipartFile[] multipartFiles,List<Document> documents) throws IOException {
         List<File> files = new ArrayList<>();
         for (MultipartFile multipartFile :
                 multipartFiles) {

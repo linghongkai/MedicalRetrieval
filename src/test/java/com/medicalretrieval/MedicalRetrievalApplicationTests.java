@@ -1,5 +1,6 @@
 package com.medicalretrieval;
 
+import com.medicalretrieval.api.oss.OssDao;
 import com.medicalretrieval.pojo.user.User;
 import com.medicalretrieval.service.UserService;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,9 @@ import java.util.List;
 class MedicalRetrievalApplicationTests {
     @Autowired
     UserService userService;
+
+    @Autowired
+    OssDao ossDao;
     @Test
     void contextLoads() {
 
@@ -55,6 +59,10 @@ class MedicalRetrievalApplicationTests {
         /*User user = new User();
         user.setPassword("4444");
         userService.save(user);*/
+    }
+
+    @Test
+    void func(){
     }
 
 }

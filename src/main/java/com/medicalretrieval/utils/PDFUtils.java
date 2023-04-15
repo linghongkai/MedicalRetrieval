@@ -21,6 +21,7 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -80,9 +81,11 @@ public class PDFUtils {
 
     }
 */
+    @Autowired
+    private OssDao ossDao;
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PDFUtils.class);
     private static final String END = "------";
-    public static void ReadPDFText(File file,Document document, List<Paragraph> paragraphs){
+    public void ReadPDFText(File file,Document document, List<Paragraph> paragraphs){
         try {
             Credentials credentials = Credentials.serviceAccountCredentialsBuilder()
                     .fromFile("pdfservices-api-credentials.json")
@@ -165,7 +168,7 @@ public class PDFUtils {
                                     String filePath = "./temp/" +name;
                                     try (FileOutputStream out = new FileOutputStream(filePath)) {
                                         ImageIO.write(image, "png", out);
-                                        String url = OssDao.upload(filePath, name);
+                                        String url = ossDao.upload(filePath, name);
                                         Urls.add(url);
                                     }
                                     //删除图片
@@ -211,38 +214,7 @@ public class PDFUtils {
 
     }
 
-    @Scheduled(cron = "0 0 3 * * ?")
-    public static void deletePDF(){
-        File file = new File("./src/main/resources/static/PDF");
-        File[] fs = file.listFiles();
-        assert fs != null;
-        for(File f:fs){
-            String suf = getFileExtension(f);
-            if(Objects.equals(suf, ".pdf")){
-                System.out.println(f.getName()+"将被删除");
-                f.delete();
-            }
-        }
-    }
 
-    /**
-     * 获取文件后缀的方法
-     *
-     * @param file 要获取文件后缀的文件
-     * @return 文件后缀
-     * @author https://www.4spaces.org/
-     */
-    public static String getFileExtension(File file) {
-        String extension = "";
-        try {
-            if (file != null && file.exists()) {
-                String name = file.getName();
-                extension = name.substring(name.lastIndexOf("."));
-            }
-        } catch (Exception e) {
-            extension = "";
-        }
-        return extension;
-    }
+
 
 }
